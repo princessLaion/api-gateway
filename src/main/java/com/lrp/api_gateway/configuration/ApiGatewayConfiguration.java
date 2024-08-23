@@ -13,36 +13,56 @@ import java.util.function.Function;
 @Configuration
 public class ApiGatewayConfiguration {
 
-//    @Bean
-//    public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
-//
-//        return builder.routes()
+    @Bean
+    public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
+
+        return builder.routes()
+                .route(
+                        //http://localhost:8765/get
+                        p -> p.path("/get")
+                                .filters(
+                                        f -> f
+                                                .addRequestHeader("NewHeader", "HeaderValue")
+                                                .addRequestParameter("paramKey", "paramValue")
+
+                                )
+                                .uri("http://httpbin.org:80")
+                )
+
+                .route(
+                        //http://localhost:8765/v1/currency-exchange/from/AUD/to/PHP
+                        p -> p.path("/v*/currency-exchange*/**")
+                                .uri("lb://currency-exchange-service")
+                ).route(
+                        //http://localhost:8765/v1/currency-conversion/feign/from/USD/to/PHP/quantity/10
+                        p -> p.path("/v*/currency-conversion*/**")
+                                .uri("lb://currency-conversion-service")
+                )
+                //based from path, redirect to new
 //                .route(
-//                        p -> p.path("/get")
+//                        //http://localhost:8765/v1/currency-conversion-new/feign/from/USD/to/PHP/quantity/10
+//                        p -> p.path("/v*/currency-conversion-new/**")
 //                                .filters(
-//                                        f -> f
-//                                                .addRequestHeader("NewHeader", "HeaderValue")
-//                                                .addRequestParameter("paramKey", "paramValue")
-//
-//                                )
-//                                .uri("http://google.com")
+//                                        f -> f.rewritePath(
+//                                                "/v1/currency-conversion-new/(?<segment>.*)",
+//                                                "/v1/currency-conversion/feign/${segment}"
+//                                        )
+//                                ).uri("lb://currency-conversion-service")
 //                )
-//
-////                .route()
-//                .build();
-//
-//        //bkup
-//        /*
-//                Function<PredicateSpec, Buildable<Route>> routeFunction
-//                = p -> p.path("/get")
-//                .filters(
-//                        f -> f
-//                                .addRequestHeader("NewHeader", "HeaderValue")
-//                                .addRequestParameter("paramKey", "paramValue")
-//
-//                )
-//                .uri("http://google.com");
-//         */
-//
-//    }
+                .build();
+
+        //bkup
+        /*
+                Function<PredicateSpec, Buildable<Route>> routeFunction
+                = p -> p.path("/get")
+                .filters(
+                        f -> f
+                                .addRequestHeader("NewHeader", "HeaderValue")
+                                .addRequestParameter("paramKey", "paramValue")
+
+                )
+                .uri("http://google.com");
+         */
+
+    }
 }
